@@ -9,9 +9,15 @@ import flixel.math.FlxMath;
 
 class PlayState extends FlxState
 {
+	public var level:LevelMap;
+	
 	override public function create():Void
 	{
 		super.create();
+		
+		level = new LevelMap("assets/maps/test1.tmx");
+		
+		add(level.surfaceTiles);
 	}
 
 	override public function update(elapsed:Float):Void
