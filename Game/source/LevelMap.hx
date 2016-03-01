@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import flixel.addons.editors.tiled.TiledMap;
 import flixel.addons.editors.tiled.TiledMap.FlxTiledAsset;
 import flixel.addons.editors.tiled.TiledLayer;
@@ -16,12 +17,16 @@ class LevelMap extends TiledMap
 	private inline static var c_PATH_LEVEL_TILESHEETS = "assets/images/tilesets/";
 	
 	public var surfaceTiles:FlxGroup;	
+	public var waterTiles:FlxGroup;
 	
 	public function new(data:Dynamic) 
 	{
 		super(data);
 		
 		surfaceTiles = new FlxGroup();
+		waterTiles = new FlxGroup();
+		
+		FlxG.camera.setScrollBoundsRect(0, 0, fullWidth, fullHeight, true);
 		
 		for (layer in layers)
 		{
@@ -53,7 +58,15 @@ class LevelMap extends TiledMap
 				var tilemap:FlxTilemap = new FlxTilemap();
 				tilemap.loadMapFromArray(tileLayer.tileArray, width, height, processedPath,
 				tileSet.tileWidth, tileSet.tileHeight, OFF, tileSet.firstGID, 1, 1);
-				surfaceTiles.add(tilemap);
+				
+				if (tileLayer.name == "Surface")
+				{
+					surfaceTiles.add(tilemap);
+				}
+				else if (tileLayer.name == "Water" ) 
+				{
+					waterTiles.add(tilemap);
+				}
 			}
 		}
 	}

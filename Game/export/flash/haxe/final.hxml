@@ -20,7 +20,7 @@
 --macro flixel.system.macros.FlxDefines.run()
 -swf-lib export/flash/obj/assets.swf
 -swf-version 11.8
--swf export/flash/bin/Magic Mail Service Saga.swf
+-swf export/flash/bin/MagicMailServiceSaga.swf
 -swf-header 640:480:60:000000
 -cp export/flash/haxe
 -D final

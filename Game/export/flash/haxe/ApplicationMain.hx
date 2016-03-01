@@ -30,7 +30,11 @@ class ApplicationMain {
 		var types = [];
 		
 		
-		urls.push ("assets/data/data-goes-here.txt");
+		urls.push ("assets/data/maps/test1.tmx");
+		types.push (lime.Assets.AssetType.TEXT);
+		
+		
+		urls.push ("assets/data/maps/test2.tmx");
 		types.push (lime.Assets.AssetType.TEXT);
 		
 		
@@ -38,24 +42,8 @@ class ApplicationMain {
 		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
-		urls.push ("assets/maps/test1.csv");
-		types.push (lime.Assets.AssetType.TEXT);
-		
-		
-		urls.push ("assets/maps/test1.tmx");
-		types.push (lime.Assets.AssetType.TEXT);
-		
-		
-		urls.push ("assets/maps/test2.tmx");
-		types.push (lime.Assets.AssetType.TEXT);
-		
-		
-		urls.push ("assets/music/music-goes-here.txt");
-		types.push (lime.Assets.AssetType.TEXT);
-		
-		
-		urls.push ("assets/sounds/sounds-go-here.txt");
-		types.push (lime.Assets.AssetType.TEXT);
+		urls.push ("assets/images/tilesets/surface.png");
+		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
 		urls.push ("flixel/sounds/beep.mp3");
@@ -139,9 +127,9 @@ class ApplicationMain {
 		
 		config = {
 			
-			build: "63",
-			company: "HaxeFlixel",
-			file: "Magic Mail Service Saga",
+			build: "110",
+			company: "Steven&Djaberr",
+			file: "MagicMailServiceSaga",
 			fps: 60,
 			name: "Magic Mail Service Saga",
 			orientation: "",
