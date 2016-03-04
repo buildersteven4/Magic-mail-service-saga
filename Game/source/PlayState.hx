@@ -16,7 +16,7 @@ class PlayState extends FlxState
 	{
 		super.create();
 		
-		level = new LevelMap("assets/data/maps/test1.tmx");
+		level = new LevelMap("assets/data/maps/test2.tmx");
 		player = new Player(10, 10);
 		
 		add(level.surfaceTiles);

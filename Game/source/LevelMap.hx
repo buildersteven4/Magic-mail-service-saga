@@ -19,7 +19,7 @@ class LevelMap extends TiledMap
 	public var surfaceTiles:FlxGroup;	
 	public var waterTiles:FlxGroup;
 	
-	public function new(data:Dynamic) 
+	public function new(data:String) 
 	{
 		super(data);
 		
