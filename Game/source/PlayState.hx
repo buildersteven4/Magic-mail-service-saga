@@ -9,18 +9,19 @@ import flixel.math.FlxMath;
 
 class PlayState extends FlxState
 {
-	public var level:LevelMap;
-	public var player:Player;
+	public static var level:LevelMap;
+	public static var player:Player;
 	
 	override public function create():Void
 	{
 		super.create();
 		
-		level = new LevelMap("assets/data/maps/test2.tmx");
+		level = new LevelMap("assets/data/maps/test.tmx");
 		player = new Player(10, 10);
 		
 		add(level.surfaceTiles);
 		add(level.waterTiles);
+		add(level.objects);
 		add(player);
 	}
 

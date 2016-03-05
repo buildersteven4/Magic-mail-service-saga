@@ -30,19 +30,19 @@ class ApplicationMain {
 		var types = [];
 		
 		
-		urls.push ("assets/data/maps/test1.tmx");
+		urls.push ("assets/data/interactions/test_person.xml");
 		types.push (lime.Assets.AssetType.TEXT);
 		
 		
-		urls.push ("assets/data/maps/test2.tmx");
+		urls.push ("assets/data/maps/test.tmx");
 		types.push (lime.Assets.AssetType.TEXT);
 		
 		
-		urls.push ("assets/images/tilesets/outside.png");
+		urls.push ("assets/images/characters.png");
 		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
-		urls.push ("assets/images/tilesets/surface.png");
+		urls.push ("assets/images/tileset.png");
 		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
@@ -127,7 +127,7 @@ class ApplicationMain {
 		
 		config = {
 			
-			build: "110",
+			build: "168",
 			company: "Steven&Djaberr",
 			file: "MagicMailServiceSaga",
 			fps: 60,

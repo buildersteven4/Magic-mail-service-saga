@@ -26,6 +26,9 @@ class Player extends FlxSprite
 	override public function update(elapsed:Float):Void
 	{
 		movement();
+		
+		var interactable:Interactable = findInteraction();
+		
 		super.update(elapsed);
 	}
 	
@@ -50,4 +53,20 @@ class Player extends FlxSprite
 		velocity.y = FlxMath.lerp(velocity.y, controlY*speed, .2);
 	}
 	
+	private function findInteraction():Interactable
+	{
+		var nearestDist:Float = 128;
+		var nearestInteractable:Interactable = null;
+		for (interactable in PlayState.level.interactables.iterator()) 
+		{
+			var dist:Float = getMidpoint().distanceTo(interactable.getMidpoint());
+			if (dist < nearestDist) 
+			{
+				nearestDist = dist;
+				nearestInteractable = interactable;
+			}
+		}
+		
+		return nearestInteractable;
+	}
 }

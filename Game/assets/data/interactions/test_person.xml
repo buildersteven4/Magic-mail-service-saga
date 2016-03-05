@@ -1,0 +1,22 @@
+<has item="fishing pole">
+	<no>
+		<skillreq fishing="50">
+			<yes>
+				<say>
+					You're a great fisher, take this
+				</say>
+				<give item="fishing pole" />
+			</yes>
+			<no>
+				<say>
+					I can not let you do that starfox
+				</say>
+			</no>
+		</skillreq>
+	</no>
+	<yes>
+		<say>
+			Great weather ain't it?
+		</say>
+	</yes>
+</has>
