@@ -1,8 +1,10 @@
 package;
 
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
 import flixel.util.FlxColor;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 
@@ -12,13 +14,29 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
  */
 class Player extends FlxSprite
 {
-	public var speed:Float = 400;
-
+	public var speed:Float = 300;
+	
+	private static inline var ANIMATION_FRAME_RATE:Int = 15;
+	
 	public function new(?X:Float=0, ?Y:Float=0) 
 	{
 		super(X, Y);
 		
-		makeGraphic(16, 16, FlxColor.BLUE);
+		loadGraphic("assets/images/player.png", true, 64, 64);
+		
+		setFacingFlip(FlxObject.LEFT, false, false);
+		setFacingFlip(FlxObject.RIGHT, true, false);
+		
+		animation.add("lr", [17, 18, 19, 20, 21, 22, 23], ANIMATION_FRAME_RATE, false);
+		animation.add("u", [8, 9, 10, 11, 12, 13, 14, 15], ANIMATION_FRAME_RATE, false);
+		animation.add("d", [1, 2, 3, 4, 5, 6], ANIMATION_FRAME_RATE, false);
+		animation.add("idle lr", [16]);
+		animation.add("idle u", [7]);
+		animation.add("idle d", [0]);
+		
+		width = 32;
+		height = 32;
+		offset = new FlxPoint(16, 42);
 		
 		FlxG.camera.follow(this, TOPDOWN_TIGHT, 1);
 	}
@@ -28,6 +46,13 @@ class Player extends FlxSprite
 		movement();
 		
 		var interactable:Interactable = findInteraction();
+		
+		if (interactable != null && FlxG.keys.justPressed.E) 
+		{
+			interactable.interact();
+		}
+		
+		PlayState.hud.interactObject = interactable;
 		
 		super.update(elapsed);
 	}
@@ -49,6 +74,45 @@ class Player extends FlxSprite
 			controlY /= controlSpeed;
 		}
 		
+		if (controlSpeed != 0)
+		{
+			if (Math.abs(controlY) > Math.abs(controlX))
+			{
+				if (controlY < 0)
+					facing = FlxObject.UP;
+				else
+					facing = FlxObject.DOWN;
+			}
+			else
+			{
+				if (controlX < 0)
+					facing = FlxObject.LEFT;
+				else
+					facing = FlxObject.RIGHT;
+			}
+		}
+		
+		switch (facing) 
+		{
+			case FlxObject.LEFT, FlxObject.RIGHT:
+				if (velocity.distanceTo(new FlxPoint()) < 100)
+					animation.play("idle lr");
+				else
+					animation.play("lr");
+					
+			case FlxObject.UP:
+				if  (velocity.distanceTo(new FlxPoint()) < 100)
+					animation.play("idle u");
+				else
+					animation.play("u");
+					
+			case FlxObject.DOWN:
+				if  (velocity.distanceTo(new FlxPoint()) < 100)
+					animation.play("idle d");
+				else
+					animation.play("d");
+		}
+		
 		velocity.x = FlxMath.lerp(velocity.x, controlX*speed, .2);
 		velocity.y = FlxMath.lerp(velocity.y, controlY*speed, .2);
 	}
@@ -57,7 +121,7 @@ class Player extends FlxSprite
 	{
 		var nearestDist:Float = 128;
 		var nearestInteractable:Interactable = null;
-		for (interactable in PlayState.level.interactables.iterator()) 
+		for (interactable in PlayState.level.interactableGroup) 
 		{
 			var dist:Float = getMidpoint().distanceTo(interactable.getMidpoint());
 			if (dist < nearestDist) 

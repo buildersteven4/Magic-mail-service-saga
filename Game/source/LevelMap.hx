@@ -1,120 +1,210 @@
-package;
-
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.addons.editors.tiled.TiledMap;
-import flixel.addons.editors.tiled.TiledMap.FlxTiledAsset;
 import flixel.addons.editors.tiled.TiledLayer;
-import flixel.addons.editors.tiled.TiledObjectLayer;
-import flixel.addons.editors.tiled.TiledTileLayer;
-import flixel.addons.editors.tiled.TiledLayer.TiledLayerType;
-import flixel.addons.editors.tiled.TiledTileSet;
+import flixel.addons.editors.tiled.TiledMap;
 import flixel.addons.editors.tiled.TiledObject;
-import flixel.graphics.frames.FlxFrame;
+import flixel.addons.editors.tiled.TiledObjectLayer;
+import flixel.addons.editors.tiled.TiledTile;
+import flixel.addons.editors.tiled.TiledTileLayer;
+import flixel.addons.editors.tiled.TiledTileSet;
+import flixel.addons.tile.FlxTilemapExt;
+import flixel.addons.tile.FlxTileSpecial;
+import flixel.FlxG;
+import flixel.FlxObject;
+import flixel.math.FlxRect;
+import flixel.util.FlxSort;
 import flixel.group.FlxGroup;
-import flixel.tile.FlxTilemap;
-import flixel.system.FlxAssets.FlxGraphicAsset;
 import haxe.io.Path;
 
+/**
+ * ...
+ * @author MrCdK
+ */
 class LevelMap extends TiledMap
 {
-	private inline static var c_PATH_LEVEL_TILESHEETS = "assets/images/";
-	private inline static var c_PATH_INTERACTION_SCRIPTS = "assets/data/interactions/";
+	public var layerGroups:FlxGroup;
 	
-	public var surfaceTiles:FlxGroup;
-	public var waterTiles:FlxGroup;
-	public var objects:FlxGroup;
-	public var interactables:FlxTypedGroup<Interactable>;
+	public var collisionGroup:FlxGroup;
+	public var interactableGroup:FlxTypedGroup<Interactable>;
 	
-	public function new(data:String)
+	public var bounds:FlxRect;
+
+	private var tileset:TiledTileSet;
+	private var animations:Dynamic;
+	
+	public function new(level:Dynamic) 
 	{
-		super(data);
+		super(level);
 		
-		surfaceTiles = new FlxGroup();
-		waterTiles = new FlxGroup();
-		objects = new FlxGroup();
-		interactables = new FlxTypedGroup<Interactable>();
+		// background and foreground groups
+		layerGroups = new FlxGroup();
 		
-		FlxG.camera.setScrollBoundsRect(0, 0, fullWidth, fullHeight, true);
+		// events and collision groups
+		interactableGroup = new FlxTypedGroup<Interactable>();
+		collisionGroup = new FlxGroup();
+		
+		// The bound of the map for the camera
+		bounds = FlxRect.get(0, 0, fullWidth, fullHeight);
+		
+		// Prepare tile set
+		tileset = this.getTileSet("tileset");
+		
+		// Prepare the tile animations
+		animations = TileAnims.getAnimations(tileset);
 		
 		for (layer in layers)
 		{
-			if (layer.type == TiledLayerType.TILE)
-			{
-				loadTiles(cast layer);
-			}
+			if (layer.type == TiledLayerType.TILE) 
+				layerGroups.add(loadTileLayer(cast layer));
 			else if (layer.type == TiledLayerType.OBJECT) 
 			{
-				loadObjects(cast layer);
+				layerGroups.add(loadObjectLayer(cast layer));
 			}
 		}
 	}
-	public function loadTiles(layer:TiledTileLayer)
+	
+	private function loadTileLayer(layer:TiledTileLayer):FlxTilemapExt
 	{
-		var tileSheetName:String = layer.properties.get("Tileset");
+		var tilemap:FlxTilemapExt = new FlxTilemapExt();
+		tilemap.loadMapFromArray(
+			layer.tileArray,
+			layer.width,
+			layer.height,
+			"assets/images/tileset.png",
+			tileset.tileWidth,
+			tileset.tileHeight,
+			OFF,
+			tileset.firstGID
+		);
 		
-		if (tileSheetName == null)
-		throw "'Tileset' property not defined for the '" + layer.name + "' layer. Please add the property to the layer.";
-		
-		var tileSet:TiledTileSet = null;
-		for (ts in tilesets)
+		// Set tile properties
+		for (i in 0...tileset.numTiles+1)
 		{
-			if (ts.name == tileSheetName)
+			tilemap.setTileProperties(i, FlxObject.NONE);
+		}
+		tilemap.setTileProperties(31, FlxObject.ANY);
+		tilemap.setTileProperties(32, FlxObject.ANY);
+		tilemap.setTileProperties(33, FlxObject.ANY);
+		tilemap.setTileProperties(34, FlxObject.ANY);
+		tilemap.setTileProperties(35, FlxObject.ANY);
+		tilemap.setTileProperties(38, FlxObject.DOWN);
+		tilemap.setTileProperties(43, FlxObject.RIGHT);
+		tilemap.setTileProperties(44, FlxObject.ANY);
+		tilemap.setTileProperties(45, FlxObject.LEFT);
+		tilemap.setTileProperties(50, FlxObject.UP);
+		tilemap.setTileProperties(55, FlxObject.UP | FlxObject.LEFT);
+		tilemap.setTileProperties(56, FlxObject.UP | FlxObject.RIGHT);
+		tilemap.setTileProperties(61, FlxObject.DOWN | FlxObject.LEFT);
+		tilemap.setTileProperties(62, FlxObject.DOWN | FlxObject.RIGHT);
+		
+		
+		var specialTiles:Array<FlxTileSpecial> = new Array<FlxTileSpecial>();
+		var tile:TiledTile;
+		var animData;
+		var specialTile:FlxTileSpecial;
+		
+		// For each tile in the layer
+		for (i in 0...layer.tiles.length)
+		{ 
+			tile = layer.tiles[i];
+			if (tile != null && isSpecialTile(tile))
 			{
-				tileSet = ts;
-				break;
+				specialTile = new FlxTileSpecial(tile.tilesetID, tile.isFlipHorizontally, tile.isFlipVertically, tile.rotate);
+				// add animations if exists
+				if (animations.exists(tile.tilesetID))
+				{
+					// Right now, a special tile only can have one animation.
+					animData = animations.get(tile.tilesetID)[0];
+					// add some speed randomization to the animation
+					var randomize:Float = FlxG.random.float(-animData.randomizeSpeed, animData.randomizeSpeed);
+					var speed:Float = animData.speed + randomize;
+					
+					specialTile.addAnimation(animData.frames, speed, animData.framesData);
+				}
+				specialTiles[i] = specialTile;
+			}
+			else
+			{
+				specialTiles[i] = null;
 			}
 		}
+		// set the special tiles (flipped, rotated and/or animated tiles)
+		tilemap.setSpecialTiles(specialTiles);
+		// set the alpha of the layer
+		tilemap.alpha = layer.opacity;
 		
-		if (tileSet == null)
-			throw "Tileset '" + tileSheetName + " not found. Did you misspell the 'Tilesheet' property in " + layer.name + "' layer?";
-			
-		var imagePath = new Path(tileSet.imageSource);
-		var processedPath = c_PATH_LEVEL_TILESHEETS + imagePath.file + "." + imagePath.ext;
-		
-		var tilemap:FlxTilemap = new FlxTilemap();
-		tilemap.loadMapFromArray(layer.tileArray, width, height, processedPath,
-		tileSet.tileWidth, tileSet.tileHeight, OFF, tileSet.firstGID, 1, 1);
-		
-		if (layer.name == "Surface")
-		{
-			surfaceTiles.add(tilemap);
-		}
-		else if (layer.name == "Water") 
-		{
-			waterTiles.add(tilemap);
-		}
+		return tilemap;
 	}
-	public function loadObjects(layer:TiledObjectLayer)
+	
+	public function loadObjectLayer(layer:TiledObjectLayer):FlxGroup
 	{
-		for (object in layer.objects)
+		var group:FlxGroup = new FlxGroup();
+		
+		for (obj in layer.objects)
 		{
-			var x:Int = object.x;
-			var y:Int = object.y;
-			
-			var tileSet:TiledTileSet = layer.map.getGidOwner(object.gid);
-			var imagePath:Path = new Path(tileSet.imageSource);
-			var sprite:FlxGraphicAsset = c_PATH_LEVEL_TILESHEETS + imagePath.file + "." + imagePath.ext;
-			
-			// objects in tiled are aligned bottom-left (top-left in flixel)
-			if (object.gid != -1)
-				y -= tileSet.tileHeight;
-			
-			var instance:FlxSprite;
-			if (object.name == "")
+			var object:FlxObject = loadObject(obj, layer);
+			if (object != null) 
 			{
-				instance = new FlxSprite(x, y);
+				group.add(object);
 			}
-			else 
-			{
-				instance = new Interactable(x, y, c_PATH_INTERACTION_SCRIPTS + object.name + ".xml");
-				interactables.add(cast instance);
-			}
-			
-			instance.loadGraphic(sprite, true, tileSet.tileWidth, tileSet.tileHeight);
-			instance.animation.frameIndex = tileSet.fromGid(object.gid) - 1;
-			
-			objects.add(instance);
 		}
+		
+		return group;
+	}
+	
+	private function loadObject(obj:TiledObject, layer:TiledObjectLayer):FlxObject
+	{
+		var x:Int = obj.x;
+		var y:Int = obj.y;
+		
+		var tileSet:TiledTileSet = layer.map.getGidOwner(obj.gid);
+		var imagePath:Path = new Path(tileSet.imageSource);
+		var sprite:String = "assets/images/" + imagePath.file + "." + imagePath.ext;
+		switch (obj.type.toLowerCase())
+		{
+			case "player":
+				/*var player:Character = new Character(o.name, x, y, "images/chars/"+o.name+".json");
+				player.setBoundsMap(bounds);
+				player.controllable = true;
+				FlxG.camera.follow(player);
+				characterGroup.add(player);*/
+				
+			case "npc":
+				var interactable:Interactable = new Interactable(x, y, "assets/data/interactions/"+obj.name+".hx");
+				interactableGroup.add(interactable);
+				
+				interactable.loadGraphic(sprite, true, tileSet.tileWidth, tileSet.tileHeight);
+				interactable.animation.frameIndex = tileSet.fromGid(obj.gid) - 1;
+				
+				return interactable;
+				
+			case "collision":
+				var coll:FlxObject = new FlxObject(x, y, obj.width, obj.height);
+				#if !FLX_NO_DEBUG
+				coll.debugBoundingBoxColor = 0xFFFF00FF;
+				#end
+				coll.immovable = true;
+				collisionGroup.add(coll);
+		}
+		
+		return null;
+	}
+	
+	public function update(elapsed:Float):Void
+	{
+		updateCollisions();
+		updateEventsOrder();
+	}
+	
+	public function updateEventsOrder():Void
+	{
+		interactableGroup.sort(FlxSort.byY);
+	}
+	
+	public function updateCollisions():Void
+	{
+	}
+	
+	private inline function isSpecialTile(tile:TiledTile):Bool
+	{
+		return false;//(tile.isFlipHorizontally || tile.isFlipVertically || tile.rotate != FlxTileSpecial.ROTATE_0 || animations.exists(tile.tilesetID));
 	}
 }

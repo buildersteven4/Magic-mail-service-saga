@@ -30,7 +30,19 @@ class ApplicationMain {
 		var types = [];
 		
 		
+		urls.push ("assets/data/interactions/test_person.hx");
+		types.push (lime.Assets.AssetType.TEXT);
+		
+		
 		urls.push ("assets/data/interactions/test_person.xml");
+		types.push (lime.Assets.AssetType.TEXT);
+		
+		
+		urls.push ("assets/data/maps/rules.txt");
+		types.push (lime.Assets.AssetType.TEXT);
+		
+		
+		urls.push ("assets/data/maps/shadow_rule.tmx");
 		types.push (lime.Assets.AssetType.TEXT);
 		
 		
@@ -38,11 +50,31 @@ class ApplicationMain {
 		types.push (lime.Assets.AssetType.TEXT);
 		
 		
+		urls.push ("Hack Bold");
+		types.push (lime.Assets.AssetType.FONT);
+		
+		
+		urls.push ("Hack Regular");
+		types.push (lime.Assets.AssetType.FONT);
+		
+		
+		urls.push ("Kiwi School Handwriting");
+		types.push (lime.Assets.AssetType.FONT);
+		
+		
 		urls.push ("assets/images/characters.png");
 		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
+		urls.push ("assets/images/player.png");
+		types.push (lime.Assets.AssetType.IMAGE);
+		
+		
 		urls.push ("assets/images/tileset.png");
+		types.push (lime.Assets.AssetType.IMAGE);
+		
+		
+		urls.push ("assets/images/ui/notebook.png");
 		types.push (lime.Assets.AssetType.IMAGE);
 		
 		
@@ -127,7 +159,7 @@ class ApplicationMain {
 		
 		config = {
 			
-			build: "168",
+			build: "373",
 			company: "Steven&Djaberr",
 			file: "MagicMailServiceSaga",
 			fps: 60,
